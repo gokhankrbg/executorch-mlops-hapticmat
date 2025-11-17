@@ -1,6 +1,56 @@
-# 🤖 MobileNetV2 ExecuTorch Android Demo
+# 🤖 ExecuTorch MLOps Haptic Mat — Quantized Person Detection Pipeline
 
-A demonstration Android app that runs MobileNetV2 inference using Facebook's ExecuTorch runtime with XNNPACK acceleration.
+An end-to-end **MLOps framework** for deploying **quantized person-detection models** on an **Android-based haptic mat system** using **STM32 pressure sensing** and **ExecuTorch**.
+
+This repo extends the original ExecuTorch MobileNet demo with a production-ready pipeline:  
+**Python PTQ + MLflow + MinIO + Jenkins CI/CD + Android ExecuTorch inference**.
+
+---
+
+## 🧩 Project Title  
+**MLOps Framework for Quantized Person Detection Models in Android-Based Haptic Mat Systems with STM32 Pressure Sensing**
+
+---
+
+## 📄 Abstract (Short)
+
+This project builds an automated MLOps system for delivering and evaluating **on-device AI models** used in a haptic mat capable of detecting if a user is present, sitting, fully lying, or partially lying.
+
+Pressure data from STM32 bladders is processed by a **quantized person-detection model**, enabling:
+
+- private, offline inference  
+- reduced operational cost  
+- automatic app shutdown when no user is detected  
+- real-time responsiveness on mobile devices  
+
+Using **post-training quantization (PTQ)**, the system compresses models, evaluates them via MLflow, stores versions in MinIO, deploys them through Jenkins, and loads them inside an Android ExecuTorch app.
+
+Developed with **Seroton GmbH**.
+
+**References:**  
+https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.202402461  
+https://arxiv.org/abs/1712.05877  
+https://github.com/google/XNNPACK  
+https://www.vulkan.org/
+
+---
+
+## 🏗 System Architecture
+
+Python PTQ Script → MLflow → MinIO → Jenkins CI/CD → Android ExecuTorch App
+- **MLflow**: logs metrics, artifacts, manifests  
+- **MinIO**: S3 storage for models  
+- **Jenkins**: fetches latest MLflow run, validates SHA, deploys model  
+- **ExecuTorch**: loads model directly from MinIO inside Android app  
+
+---
+
+## 🛠 Tech Stack
+
+- **MLflow**, **MinIO**, **Jenkins**, **Docker**, **Python**
+- **ExecuTorch**, **XNNPACK** (CPU backend)
+- **Kotlin**, **Jetpack Compose**
+- **STM32 Pressure Sensors**
 
 ## 📱 App Demo
 
@@ -65,13 +115,41 @@ The app demonstrates successful ExecuTorch integration:
 - **Memory Usage**: Minimal overhead
 - **CPU Usage**: Optimized with XNNPACK backend
 
-## 📝 Notes
-
-- The app uses random input data for testing purposes
-- For production use, add proper image preprocessing
-- Consider adding ImageNet class labels for meaningful predictions
-- Test on various Android devices for performance validation
-
 ---
 
-Built with ❤️ using ExecuTorch and Android Studio
+## 🔥 Training → Quantization → Deployment Pipeline
+
+### **1️⃣ Start MLOps stack**
+
+```bash
+docker compose up -d
+2️⃣ Log model to MLflow + MinIO
+bash
+Kodu kopyala
+python scripts/log_model_to_mlflow.py
+3️⃣ Jenkins auto-deploys the latest model
+Downloads MLflow artifacts
+
+Validates SHA-256
+
+Uploads production model to MinIO
+
+Publishes latest.json for the Android app
+
+4️⃣ Android app loads model from MinIO
+User taps Load Model →
+model is downloaded → SHA check → ExecuTorch loads → inference begins.
+
+🚀 Key Features
+🔒 100% on-device inference for privacy
+
+⚡ Real-time quantized AI on mobile
+
+🔁 Automated CI/CD pipeline with Jenkins
+
+📦 Reproducible Dockerized setup
+
+🧪 Full PTQ + benchmarking pipeline
+
+🏢 Collaboration
+Developed in collaboration with Seroton GmbH.
