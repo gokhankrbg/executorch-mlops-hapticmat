@@ -9,6 +9,7 @@ This repo extends the original ExecuTorch MobileNet demo with a production-ready
 
 ## 🧩 Project Title  
 **MLOps Framework for Quantized Person Detection Models in Android-Based Haptic Mat Systems with STM32 Pressure Sensing**
+```mermaid
 flowchart LR
     subgraph DevMachine[Docker Host (Local)]
         subgraph Stack[Docker Compose Stack]
@@ -40,6 +41,7 @@ flowchart LR
 
     classDef code fill:#f6f8fa,stroke:#999,stroke-width:1px;
     classDef mobile fill:#e8f7ff,stroke:#0077b6,stroke-width:1px;
+```
 
 ---
 
