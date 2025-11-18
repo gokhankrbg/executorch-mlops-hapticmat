@@ -7,7 +7,7 @@ This repo extends the original ExecuTorch MobileNet demo with a production-ready
 
 ---
 
-## 🧩 Project Title  
+## Project Title  
 **MLOps Framework for Quantized Person Detection Models in Android-Based Haptic Mat Systems with STM32 Pressure Sensing**
 
 ```mermaid
@@ -54,7 +54,7 @@ flowchart LR
 
 ---
 
-## 📄 Abstract (Short)
+## Abstract 
 
 This project builds an automated MLOps system for delivering and evaluating **on-device AI models** used in a haptic mat capable of detecting if a user is present, sitting, fully lying, or partially lying.
 
@@ -77,7 +77,7 @@ https://www.vulkan.org/
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 Python PTQ Script → MLflow → MinIO → Jenkins CI/CD → Android ExecuTorch App
 - **MLflow**: logs metrics, artifacts, manifests  
@@ -87,14 +87,14 @@ Python PTQ Script → MLflow → MinIO → Jenkins CI/CD → Android ExecuTorch 
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **MLflow**, **MinIO**, **Jenkins**, **Docker**, **Python**
 - **ExecuTorch**, **XNNPACK** (CPU backend)
 - **Kotlin**, **Jetpack Compose**
 - **STM32 Pressure Sensors**
 
-## 📱 App Demo
+## App Demo
 
 <div align="center">
   <table>
@@ -118,7 +118,7 @@ The app successfully loads and tests the MobileNetV2 model with:
 - 🏆 Top-5 prediction display
 - 📈 Output statistics analysis
 
-## 🏗️ Building the Model
+## Building the Model
 
 The ExecuTorch model file (`mv2_xnnpack.pte`) is generated using:
 
@@ -128,7 +128,7 @@ python mv2_xnnpack_build.py
 
 This script exports a MobileNetV2 model from PyTorch to ExecuTorch format with XNNPACK backend optimization for accelerated CPU inference.
 
-## 🚀 Features
+## Features
 
 - **Model Loading**: Loads pre-trained MobileNetV2 model from Android assets
 - **Fast Inference**: Optimized with XNNPACK backend for mobile performance
@@ -140,7 +140,7 @@ This script exports a MobileNetV2 model from PyTorch to ExecuTorch format with X
   - Statistical analysis (min/max/mean values)
 - **User-friendly UI**: Material Design 3 interface with status indicators
 
-## 🧪 Testing Results
+## Testing Results
 
 The app demonstrates successful ExecuTorch integration:
 
@@ -150,7 +150,7 @@ The app demonstrates successful ExecuTorch integration:
 - **Performance**: 🚀 XNNPACK acceleration working optimally
 - **Stability**: 💪 No crashes or memory issues
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 - **Model Size**: ~9MB (MobileNetV2 with XNNPACK optimization)
 - **Inference Time**: 25ms (tested on Samsung device)
@@ -159,9 +159,9 @@ The app demonstrates successful ExecuTorch integration:
 
 ---
 
-## 🔥 Training → Quantization → Deployment Pipeline
+## Training → Quantization → Deployment Pipeline
 
-### **1️⃣ Start MLOps stack**
+1️⃣ Start MLOps stack**
 
 ```bash
 docker compose up -d
@@ -182,16 +182,16 @@ Publishes latest.json for the Android app
 User taps Load Model →
 model is downloaded → SHA check → ExecuTorch loads → inference begins.
 
-🚀 Key Features
-🔒 100% on-device inference for privacy
+ Key Features
+ 100% on-device inference for privacy
 
-⚡ Real-time quantized AI on mobile
+ Real-time quantized AI on mobile
 
-🔁 Automated CI/CD pipeline with Jenkins
+ Automated CI/CD pipeline with Jenkins
 
-📦 Reproducible Dockerized setup
+ Reproducible Dockerized setup
 
-🧪 Full PTQ + benchmarking pipeline
+Full PTQ + benchmarking pipeline
 
-🏢 Collaboration
+Collaboration
 Developed in collaboration with Seroton GmbH.
