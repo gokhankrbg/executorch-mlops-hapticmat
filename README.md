@@ -1,4 +1,4 @@
-# 🤖 ExecuTorch MLOps Haptic Mat — Quantized Person Detection Pipeline
+# ExecuTorch MLOps Haptic Mat — Quantized Person Detection Pipeline
 
 An end-to-end **MLOps framework** for deploying **quantized person-detection models** on an **Android-based haptic mat system** using **STM32 pressure sensing** and **ExecuTorch**.
 
@@ -9,6 +9,37 @@ This repo extends the original ExecuTorch MobileNet demo with a production-ready
 
 ## 🧩 Project Title  
 **MLOps Framework for Quantized Person Detection Models in Android-Based Haptic Mat Systems with STM32 Pressure Sensing**
+flowchart LR
+    subgraph DevMachine[Docker Host (Local)]
+        subgraph Stack[Docker Compose Stack]
+            MLflow[MLflow Tracking Server\n(http://localhost:5001)]
+            Minio[(MinIO Object Store\n:9000 / :9001)]
+            MySQL[(MySQL DB\nMLflow Backend Store)]
+            Jenkins[Jenkins CI/CD\nMLOps-Model-Deployment Pipeline]
+        end
+    end
+
+    Script[log_model_to_mlflow.py\n(PTQ + logging script)]:::code
+    Android[Android App\nExecuTorch + Quantized Model]:::mobile
+
+    %% Script -> MLflow
+    Script -->|MLflow Tracking API\nlog_param / log_metric / log_artifact| MLflow
+
+    %% MLflow -> MySQL & MinIO
+    MLflow -->|runs, params,\nmetrics, experiments| MySQL
+    MLflow -->|"artifact_uri" altında\nmodel_files/manifest.json\nmv2_xnnpack.pte| Minio
+
+    %% Jenkins pipeline
+    Jenkins -->|mlflow search-runs\n(en son başarılı run ID)| MLflow
+    Jenkins -->|mlflow artifacts download\nmodel_files/...| Minio
+    Jenkins -->|Upload to prod bucket\nmv2_xnnpack.pte + latest.json| Minio
+
+    %% Android app
+    Android -->|HTTP(S)\nGET latest.json + model.pte| Minio
+    Android -->|On-device inference\nExecuTorch XNNPACK| Android
+
+    classDef code fill:#f6f8fa,stroke:#999,stroke-width:1px;
+    classDef mobile fill:#e8f7ff,stroke:#0077b6,stroke-width:1px;
 
 ---
 
