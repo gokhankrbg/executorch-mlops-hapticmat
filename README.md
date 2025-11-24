@@ -2,13 +2,40 @@
 
 An end-to-end **MLOps framework** for deploying **quantized person-detection models** on an **Android-based haptic mat system** using **STM32 pressure sensing** and **ExecuTorch**.
 
-This repo extends the original ExecuTorch MobileNet demo with a production-ready pipeline:  
+This repo extends the original ExecuTorch MobileNet demo with a production-ready pipeline:
 **Python PTQ + MLflow + MinIO + Jenkins CI/CD + Android ExecuTorch inference**.
+
+Developed in collaboration with **Seroton GmbH**.
 
 ---
 
-## Project Title  
+## Project Title
 **MLOps Framework for Quantized Person Detection Models in Android-Based Haptic Mat Systems with STM32 Pressure Sensing**
+
+## Abstract
+
+This project builds an automated MLOps system for delivering and evaluating **on-device AI models** used in a haptic mat capable of detecting if a user is present, sitting, fully lying, or partially lying.
+
+Pressure data from STM32 bladders is processed by a **quantized person-detection model**, enabling:
+
+* private, offline inference
+* reduced operational cost
+* automatic app shutdown when no user is detected
+* real-time responsiveness on mobile devices
+
+Using **post-training quantization (PTQ)**, the system compresses models, evaluates them via MLflow, stores versions in MinIO, deploys them through Jenkins, and loads them inside an Android ExecuTorch app.
+
+**References:**
+* https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.202402461
+* https://arxiv.org/abs/1712.05877
+* https://github.com/google/XNNPACK
+* https://www.vulkan.org/
+
+---
+
+## System Architecture
+
+This diagram illustrates the complete end-to-end MLOps pipeline, from the initial Python script to the final on-device inference on Android.
 
 ```mermaid
 flowchart LR
@@ -28,12 +55,13 @@ flowchart LR
 
     %% MLflow → Backend Stores
     MLflow -->|runs, params, metrics| MySQL
-    MLflow -->|artifacts<br/>manifest.json + model.pte| Minio
+    MLflow -->|artifacts<br/>(Staging Bucket)| Minio
 
     %% Jenkins → MLflow → MinIO
     Jenkins -->|Search latest successful run| MLflow
-    Jenkins -->|Download artifacts| Minio
-    Jenkins -->|Upload production model<br/>mv2_xnnpack.pte + latest.json| Minio
+    Jenkins -->|Download artifacts<br/>(from Staging)| Minio
+    Jenkins -->|SHA-256 Verification| Jenkins
+    Jenkins -->|Upload production model<br/>(to Production Bucket)| Minio
 
     %% Android App → MinIO
     Android -->|GET latest.json| Minio
@@ -45,153 +73,147 @@ flowchart LR
     classDef storage fill:#fff7e6,stroke:#e6a500,stroke-width:1px;
     classDef mobile fill:#e6fff2,stroke:#00a86b,stroke-width:1px;
     classDef script fill:#f6f8fa,stroke:#999,stroke-width:1px;
+    classDef jenkins fill:#ffecec,stroke:#ff5757,stroke-width:1px;
+
     class Script script;
-    class MLflow,Jenkins server;
+    class MLflow server;
+    class Jenkins jenkins;
     class MySQL,Minio storage;
     class Android mobile;
-```
-
-
----
-
-## Abstract 
-
-This project builds an automated MLOps system for delivering and evaluating **on-device AI models** used in a haptic mat capable of detecting if a user is present, sitting, fully lying, or partially lying.
-
-Pressure data from STM32 bladders is processed by a **quantized person-detection model**, enabling:
-
-- private, offline inference  
-- reduced operational cost  
-- automatic app shutdown when no user is detected  
-- real-time responsiveness on mobile devices  
-
-Using **post-training quantization (PTQ)**, the system compresses models, evaluates them via MLflow, stores versions in MinIO, deploys them through Jenkins, and loads them inside an Android ExecuTorch app.
-
-Developed with **Seroton GmbH**.
-
-**References:**  
-https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.202402461  
-https://arxiv.org/abs/1712.05877  
-https://github.com/google/XNNPACK  
-https://www.vulkan.org/
-
----
-
-## System Architecture
-
-Python PTQ Script → MLflow → MinIO → Jenkins CI/CD → Android ExecuTorch App
-- **MLflow**: logs metrics, artifacts, manifests  
-- **MinIO**: S3 storage for models  
-- **Jenkins**: fetches latest MLflow run, validates SHA, deploys model  
-- **ExecuTorch**: loads model directly from MinIO inside Android app  
 
 ---
 
 ## Tech Stack
 
-- **MLflow**, **MinIO**, **Jenkins**, **Docker**, **Python**
-- **ExecuTorch**, **XNNPACK** (CPU backend)
-- **Kotlin**, **Jetpack Compose**
-- **STM32 Pressure Sensors**
+* **MLOps Core:** MLflow, MinIO, Jenkins, MySQL, Docker
+* **AI/ML Frameworks:** PyTorch, ExecuTorch, XNNPACK (CPU backend), Python
+* **Mobile Development:** Kotlin, Jetpack Compose, Android SDK
+* **Hardware:** STM32 Pressure Sensors
 
-## App Demo
+---
+
+## 🚀 MLOps Workflow & Proof of Concept
+
+This section demonstrates the actual execution of the pipeline with screenshots from our live environment.
+
+### Step 1: Training & Experiment Tracking (MLflow)
+
+The process begins with the `log_model_to_mlflow.py` script. It loads a pre-trained quantized model (`.pte`), calculates its SHA-256 hash for security, and logs all metadata, metrics (e.g., latency, size), and artifacts to the MLflow Tracking Server.
+
+<div align="center">
+  <img src="(GÖRSEL EKLE: Buraya MLflow görselinin yolunu yaz)" alt="MLflow Experiment Tracking" width="800">
+  <p><i>Figure 1: MLflow dashboard showing a successful experiment run with logged metrics and artifacts.</i></p>
+</div>
+
+### Step 2: Artifact Storage (MinIO - Staging)
+
+MLflow automatically stores the actual model files and manifests in our S3-compatible MinIO storage. This first bucket (`mlflow-artifacts`) acts as our **Staging Area**.
+
+<div align="center">
+  <img src="(GÖRSEL EKLE: Buraya MinIO Staging görselinin yolunu yaz)" alt="MinIO Staging Bucket" width="800">
+  <p><i>Figure 2: MinIO Staging Bucket containing the raw model artifacts pushed by MLflow.</i></p>
+</div>
+
+### Step 3: CI/CD Deployment & Verification (Jenkins)
+
+Jenkins is triggered to deploy the latest successful model. It fetches the artifacts from the Staging bucket, performs a critical **SHA-256 verification** to ensure integrity, and if successful, promotes the model to production.
+
+<div align="center">
+  <img src="(GÖRSEL EKLE: Buraya Jenkins görselinin yolunu yaz)" alt="Jenkins CI/CD Pipeline" width="800">
+  <p><i>Figure 3: Jenkins CI/CD pipeline executing the model promotion and verification process.</i></p>
+</div>
+
+### Step 4: Production Storage (MinIO - Production)
+
+The verified model and a newly generated `latest.json` manifest are uploaded by Jenkins to the **Production Bucket** (`mlops-test`). This bucket is publicly accessible (read-only) for the Android app.
+
+<div align="center">
+  <img src="(GÖRSEL EKLE: Buraya MinIO Production görselinin yolunu yaz)" alt="MinIO Production Bucket" width="800">
+  <p><i>Figure 4: MinIO Production Bucket containing the deployment-ready model and manifest.</i></p>
+</div>
+
+---
+
+## Android App Integration & Demo
+
+The Android application, built with Kotlin and Jetpack Compose, uses the **ExecuTorch runtime** with the **XNNPACK backend** for accelerated CPU inference. It periodically checks the MinIO Production Bucket for updates via `latest.json` and downloads the new model automatically.
+
+### Building the ExecuTorch Model
+The `.pte` model file is generated using the following script, which exports a PyTorch MobileNetV2 to ExecuTorch format with XNNPACK optimization:
+
+```bash
+python mv2_xnnpack_build.py
+### App Demo & Results
+The app demonstrates successful loading and inference of the quantized model.
 
 <div align="center">
   <table>
     <tr>
       <td align="center">
         <b>📱 Screenshot</b><br/>
-        <img src="screen_test.jpeg" alt="App Test Screenshot" width="300">
+        <img src="(GÖRSEL EKLE: screen_test.jpeg görselinin yolunu yaz)" alt="App Test Screenshot" width="300">
       </td>
       <td align="center">
         <b>🎥 Demo Video</b><br/>
-        <img src="demo.gif" alt="App Demo Video" width="300">
+        <img src="(GÖRSEL EKLE: demo.gif görselinin yolunu yaz)" alt="App Demo Video" width="300">
       </td>
     </tr>
   </table>
 </div>
 
-The app successfully loads and tests the MobileNetV2 model with:
-- ✅ Model loading from assets
-- ⚡ Fast inference (25ms on device)  
-- 📊 Correct output shape validation [1, 1000]
-- 🏆 Top-5 prediction display
-- 📈 Output statistics analysis
-
-## Building the Model
-
-The ExecuTorch model file (`mv2_xnnpack.pte`) is generated using:
-
-```bash
-python mv2_xnnpack_build.py
-```
-
-This script exports a MobileNetV2 model from PyTorch to ExecuTorch format with XNNPACK backend optimization for accelerated CPU inference.
-
-## Features
-
-- **Model Loading**: Loads pre-trained MobileNetV2 model from Android assets
-- **Fast Inference**: Optimized with XNNPACK backend for mobile performance
-- **Real-time Testing**: Test inference with random input data (1×3×224×224)
-- **Results Analysis**: 
-  - Inference timing measurement
-  - Output shape validation
-  - Top-5 class predictions
-  - Statistical analysis (min/max/mean values)
-- **User-friendly UI**: Material Design 3 interface with status indicators
-
-## Testing Results
-
-The app demonstrates successful ExecuTorch integration:
-
-- **Model Loading**: ✅ Successful from assets folder
-- **Inference Speed**: ⚡ 25ms average execution time
-- **Output Validation**: 📊 Correct [1, 1000] shape for ImageNet classification
-- **Performance**: 🚀 XNNPACK acceleration working optimally
-- **Stability**: 💪 No crashes or memory issues
-
-## Performance Metrics
-
-- **Model Size**: ~9MB (MobileNetV2 with XNNPACK optimization)
-- **Inference Time**: 25ms (tested on Samsung device)
-- **Memory Usage**: Minimal overhead
-- **CPU Usage**: Optimized with XNNPACK backend
+**Testing Results:**
+* **Model Loading:** ✅ Successful from assets/MinIO
+* **Inference Speed:** ⚡ **25ms** average execution time on device
+* **Output Validation:** 📊 Correct [1, 1000] shape for ImageNet classification
+* **Performance:** 🚀 XNNPACK acceleration working optimally
 
 ---
 
-## Training → Quantization → Deployment Pipeline
+## Performance Metrics & Key Features
 
-1️⃣ Start MLOps stack**
+### Key Features
+* **100% On-Device Inference:** Ensures complete privacy and offline capability.
+* **Real-time Quantized AI:** Optimized for mobile CPUs using PTQ and XNNPACK.
+* **Automated CI/CD Pipeline:** Streamlined deployment with Jenkins and SHA-256 security.
+* **Reproducible Setup:** Entire backend infrastructure is Dockerized.
 
+### Performance Metrics
+* **Model Size:** ~9MB (Quantized MobileNetV2)
+* **Inference Time:** 25ms (tested on Samsung device)
+* **CPU Usage:** Optimized with XNNPACK backend
+
+---
+
+## How to Run the MLOps Pipeline
+
+Follow these steps to stand up the entire infrastructure and deploy a model.
+
+**1️⃣ Start the MLOps Infrastructure**
 ```bash
 docker compose up -d
-2️⃣ Log model to MLflow + MinIO
-bash
-Kodu kopyala
+This commands starts MinIO, MLflow, MySQL, and Jenkins containers.
+
+**2️⃣ Log a Model to MLflow & MinIO (Staging)**
+```bash
 python scripts/log_model_to_mlflow.py
-3️⃣ Jenkins auto-deploys the latest model
-Downloads MLflow artifacts
+This script processes the model and logs it to the MLflow tracking server.
 
-Validates SHA-256
+**3️⃣ Run Jenkins Pipeline (Deployment)
+Access Jenkins at http://localhost:8080.
 
-Uploads production model to MinIO
+Trigger the defined pipeline job.
 
-Publishes latest.json for the Android app
+Jenkins will automatically:
 
-4️⃣ Android app loads model from MinIO
-User taps Load Model →
-model is downloaded → SHA check → ExecuTorch loads → inference begins.
+Download artifacts from Staging.
 
- Key Features
- 100% on-device inference for privacy
+Validate SHA-256.
 
- Real-time quantized AI on mobile
+Upload the model and latest.json to the Production MinIO bucket.
 
- Automated CI/CD pipeline with Jenkins
+**4️⃣ Run the Android App
+Build and run the app in Android Studio.
 
- Reproducible Dockerized setup
+Tap "Load Model".
 
-Full PTQ + benchmarking pipeline
-
-Collaboration
-Developed in collaboration with Seroton GmbH.
+The app will check MinIO, download the model if needed, and be ready for inference.
