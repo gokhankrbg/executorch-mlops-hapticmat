@@ -36,32 +36,17 @@ Using **post-training quantization (PTQ)**, the system compresses models, evalua
 ## System Architecture
 
 This diagram illustrates the complete end-to-end MLOps pipeline, from the initial Python script to the final on-device inference on Android.
-
-```mermaid
-flowchart LR
-
-    %% ========== COMPONENTS ==========
-    Script["Python Script<br/>log_model_to_mlflow.py"]
-    MLflow["MLflow Tracking Server"]
-    MySQL["MySQL Backend Store"]
-    Minio["MinIO Object Storage"]
-    Jenkins["Jenkins CI/CD Pipeline"]
-    Android["Android App<br/>ExecuTorch Runtime"]
-
-    %% ========== PIPELINES ==========
-
     %% Script → MLflow
     Script -->|log_param / log_metric / log_artifact| MLflow
 
     %% MLflow → Backend Stores
     MLflow -->|runs, params, metrics| MySQL
-    MLflow -->|artifacts<br/>(Staging Bucket)| Minio
+    MLflow -->|artifacts<br/>manifest.json + model.pte| Minio
 
     %% Jenkins → MLflow → MinIO
     Jenkins -->|Search latest successful run| MLflow
-    Jenkins -->|Download artifacts<br/>(from Staging)| Minio
-    Jenkins -->|SHA-256 Verification| Jenkins
-    Jenkins -->|Upload production model<br/>(to Production Bucket)| Minio
+    Jenkins -->|Download artifacts| Minio
+    Jenkins -->|Upload production model<br/>mv2_xnnpack.pte + latest.json| Minio
 
     %% Android App → MinIO
     Android -->|GET latest.json| Minio
@@ -73,13 +58,12 @@ flowchart LR
     classDef storage fill:#fff7e6,stroke:#e6a500,stroke-width:1px;
     classDef mobile fill:#e6fff2,stroke:#00a86b,stroke-width:1px;
     classDef script fill:#f6f8fa,stroke:#999,stroke-width:1px;
-    classDef jenkins fill:#ffecec,stroke:#ff5757,stroke-width:1px;
-
     class Script script;
-    class MLflow server;
-    class Jenkins jenkins;
+    class MLflow,Jenkins server;
     class MySQL,Minio storage;
     class Android mobile;
+<img width="468" height="649" alt="image" src="https://github.com/user-attachments/assets/c3d75ed7-c3f5-4497-a94c-942042c1db44" />
+
 ## System Architecture
 
 ## Tech Stack
