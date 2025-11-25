@@ -24,22 +24,22 @@ flowchart LR
     %% ========== PIPELINES ==========
 
     %% Script → MLflow
-    Script -->|1. Train, Quantize & Log<br/>"(Artifacts & Metrics)"| MLflow
+    Script -->|"1. Train, Quantize & Log<br/>(Artifacts & Metrics)"| MLflow
 
     %% MLflow → Backend Stores
-    MLflow -->|runs, params, metrics| MySQL
-    MLflow -->|artifacts<br/>"(Staging Bucket)"| Minio
+    MLflow -->|"runs, params, metrics"| MySQL
+    MLflow -->|"artifacts<br/>(Staging Bucket)"| Minio
 
     %% Jenkins → MLflow → MinIO
-    Jenkins -->|2. Trigger & Fetch latest run| MLflow
-    Jenkins -->|Download artifacts<br/>"(from Staging)"| Minio
-    Jenkins -->|3. SHA-256 Verification| Jenkins
-    Jenkins -->|4. Promote to Production<br/>"(model.pte + latest.json)"| Minio
+    Jenkins -->|"2. Trigger & Fetch latest run"| MLflow
+    Jenkins -->|"Download artifacts<br/>(from Staging)"| Minio
+    Jenkins -->|"3. SHA-256 Verification"| Jenkins
+    Jenkins -->|"4. Promote to Production<br/>(model.pte + latest.json)"| Minio
 
     %% Android App → MinIO
-    Android -->|5. Check for Updates<br/>"(GET latest.json)"| Minio
-    Android -->|Download new model.pte<br/>"(if SHA mismatch)"| Minio
-    Android -->|6. On-device Inference<br/>ExecuTorch XNNPACK| Android
+    Android -->|"5. Check for Updates<br/>(GET latest.json)"| Minio
+    Android -->|"Download new model.pte<br/>(if SHA mismatch)"| Minio
+    Android -->|"6. On-device Inference<br/>ExecuTorch XNNPACK"| Android
 
     %% STYLES
     classDef server fill:#e7f0ff,stroke:#4a90e2,stroke-width:1px;
@@ -54,6 +54,7 @@ flowchart LR
     class MySQL,Minio storage;
     class Android mobile;
 ```
+
 
 
 ---
